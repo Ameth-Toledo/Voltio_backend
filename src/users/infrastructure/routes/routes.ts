@@ -20,7 +20,7 @@ export function configureUserRoutes(
 
   router.post('/auth/login', (req, res) => authCtrl.login(req, res));
   router.post('/auth/register', upload.single('imagen'), (req, res) => createUserCtrl.execute(req, res));
-  router.post('/auth/logout', (req, res) => authCtrl.logout(req, res));
+  router.post('/auth/logout', jwtMiddleware, (req, res) => authCtrl.logout(req, res));
   router.post('/auth/refresh', (req, res) => authCtrl.refreshToken(req, res));
   router.get('/auth/profile', jwtMiddleware, (req, res) => authCtrl.getProfile(req, res));
   router.get('/auth/verify', jwtMiddleware, (req, res) => authCtrl.verifyToken(req, res));

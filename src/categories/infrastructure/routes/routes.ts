@@ -15,8 +15,8 @@ export function configureCategoriasRoutes(
 ): Router {
   const router = Router();
 
-  router.get('/categorias', (req: Request, res: Response) => getAllCategoriasCtrl.handle(req, res));
-  router.get('/categorias/:id', (req: Request, res: Response) => getCategoriaByIdCtrl.handle(req, res));
+  router.get('/categorias', jwtMiddleware, (req: Request, res: Response) => getAllCategoriasCtrl.handle(req, res));
+  router.get('/categorias/:id', jwtMiddleware, (req: Request, res: Response) => getCategoriaByIdCtrl.handle(req, res));
 
   router.post('/categorias', jwtMiddleware, (req: Request, res: Response) =>
     createCategoriaCtrl.handle(req, res)

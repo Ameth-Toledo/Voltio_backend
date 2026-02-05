@@ -18,9 +18,9 @@ export function configureProductRoutes(
 ): Router {
   const router = Router();
 
-  router.get('/products', (req: Request, res: Response) => getAllProductsCtrl.handle(req, res));
-  router.get('/products/:id', (req: Request, res: Response) => getProductByIdCtrl.handle(req, res));
-  router.get('/products/category/:id_categoria', (req: Request, res: Response) => 
+  router.get('/products', jwtMiddleware, (req: Request, res: Response) => getAllProductsCtrl.handle(req, res));
+  router.get('/products/:id', jwtMiddleware, (req: Request, res: Response) => getProductByIdCtrl.handle(req, res));
+  router.get('/products/category/:id_categoria', jwtMiddleware, (req: Request, res: Response) => 
     getProductsByCategoryCtrl.handle(req, res)
   );
 

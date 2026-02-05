@@ -17,9 +17,9 @@ export function configureEspecificacionesRoutes(
 ): Router {
   const router = Router();
 
-  router.get('/especificaciones', (req: Request, res: Response) => getAllEspecificacionesCtrl.handle(req, res));
-  router.get('/especificaciones/:id', (req: Request, res: Response) => getEspecificacionByIdCtrl.handle(req, res));
-  router.get('/productos/:id_producto/especificaciones', (req: Request, res: Response) =>
+  router.get('/especificaciones', jwtMiddleware, (req: Request, res: Response) => getAllEspecificacionesCtrl.handle(req, res));
+  router.get('/especificaciones/:id', jwtMiddleware, (req: Request, res: Response) => getEspecificacionByIdCtrl.handle(req, res));
+  router.get('/productos/:id_producto/especificaciones', jwtMiddleware, (req: Request, res: Response) =>
     getEspecificacionesByProductIdCtrl.handle(req, res)
   );
 
