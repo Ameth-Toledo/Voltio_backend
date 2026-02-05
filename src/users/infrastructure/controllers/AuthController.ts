@@ -25,12 +25,16 @@ export class AuthController {
         secondname: user.secondname,
         lastname: user.lastname,
         secondlastname: user.secondlastname,
-        email: user.email,
-        createdAt: user.createdAt.toISOString(),
+        email: user.email,        phone: user.phone,
+        image_profile: user.image_profile,
+        role: user.role,
+        created_at: user.created_at.toISOString(),
       };
 
       const response: LoginResponse = {
         message: 'Login exitoso',
+        accessToken: accessToken,
+        refreshToken: refreshToken,
         user: userResponse,
       };
 
@@ -91,8 +95,10 @@ export class AuthController {
         secondname: user.secondname,
         lastname: user.lastname,
         secondlastname: user.secondlastname,
-        email: user.email,
-        createdAt: user.createdAt.toISOString(),
+        email: user.email,        phone: user.phone,
+        image_profile: user.image_profile,
+        role: user.role,
+        created_at: user.created_at.toISOString(),
       };
 
       res.status(200).json({ user: userResponse });

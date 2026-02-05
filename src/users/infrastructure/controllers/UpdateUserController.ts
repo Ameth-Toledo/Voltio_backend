@@ -1,13 +1,14 @@
 import { Request, Response } from 'express';
 import { UpdateUserUseCase } from '../../application/UpdateUserUseCase';
 import { UpdateUserRequest } from '../../domain/dto/UserRequest';
+import { uploadImageToCloudinary } from '../../../core/config/cloudinary_service';
 
 export class UpdateUserController {
   constructor(private updateUserUseCase: UpdateUserUseCase) {}
 
   async execute(req: Request, res: Response): Promise<void> {
     try {
-      const id = parseInt(req.params.id);
+      const id = parseInt(req.params.id as string);
 
       if (isNaN(id)) {
         res.status(400).json({ error: 'ID invalido' });
@@ -19,6 +20,11 @@ export class UpdateUserController {
       if (!updateRequest.name || !updateRequest.lastname || !updateRequest.email) {
         res.status(400).json({ error: 'Campos obligatorios: name, lastname, email' });
         return;
+      }
+
+      if (req.file) {
+        const imageUrl = await uploadImageToCloudinary(req.file.buffer, 'users');
+        updateRequest.image_profile = imageUrl;
       }
 
       const user = await this.updateUserUseCase.execute(id, updateRequest);

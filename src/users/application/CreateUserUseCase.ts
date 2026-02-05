@@ -35,13 +35,16 @@ export class CreateUserUseCase {
 
     const hashedPassword = await hashPassword(userRequest.password);
 
-    const newUser: Omit<User, 'id' | 'createdAt'> = {
+    const newUser: Omit<User, 'id' | 'created_at'> = {
       name: userRequest.name.trim(),
       secondname: userRequest.secondname?.trim() || null,
       lastname: userRequest.lastname.trim(),
       secondlastname: userRequest.secondlastname?.trim() || null,
       email: userRequest.email.trim().toLowerCase(),
       password: hashedPassword,
+      phone: userRequest.phone || null,
+      image_profile: userRequest.image_profile || null,
+      role: userRequest.role || 'user',
     };
 
     return await this.userRepository.save(newUser);

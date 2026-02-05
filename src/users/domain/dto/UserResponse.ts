@@ -13,5 +13,7 @@ export interface UserResponse {
 
 export interface LoginResponse {
   message: string;
+  accessToken: string;
+  refreshToken: string;
   user: UserResponse;
 }

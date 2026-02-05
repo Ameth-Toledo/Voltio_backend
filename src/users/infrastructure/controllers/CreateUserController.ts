@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { CreateUserUseCase } from '../../application/CreateUserUseCase';
 import { UserRequest } from '../../domain/dto/UserRequest';
 import { UserResponse } from '../../domain/dto/UserResponse';
+import { uploadImageToCloudinary } from '../../../core/config/cloudinary_service';
 
 export class CreateUserController {
   constructor(private createUserUseCase: CreateUserUseCase) {}
@@ -15,6 +16,11 @@ export class CreateUserController {
         return;
       }
 
+      if (req.file) {
+        const imageUrl = await uploadImageToCloudinary(req.file.buffer, 'users');
+        userRequest.image_profile = imageUrl;
+      }
+
       const user = await this.createUserUseCase.execute(userRequest);
 
       const userResponse: UserResponse = {
@@ -23,8 +29,10 @@ export class CreateUserController {
         secondname: user.secondname,
         lastname: user.lastname,
         secondlastname: user.secondlastname,
-        email: user.email,
-        createdAt: user.createdAt.toISOString(),
+        email: user.email,        phone: user.phone,
+        image_profile: user.image_profile,
+        role: user.role,
+        created_at: user.created_at.toISOString(),
       };
 
       res.status(201).json({

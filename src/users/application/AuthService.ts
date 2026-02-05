@@ -52,13 +52,16 @@ export class AuthService {
 
     const hashedPassword = await hashPassword(userRequest.password);
 
-    const newUser: Omit<User, 'id' | 'createdAt'> = {
+    const newUser: Omit<User, 'id' | 'created_at'> = {
       name: userRequest.name,
       secondname: userRequest.secondname || null,
       lastname: userRequest.lastname,
       secondlastname: userRequest.secondlastname || null,
       email: email,
       password: hashedPassword,
+      phone: userRequest.phone || null,
+      image_profile: userRequest.image_profile || null,
+      role: userRequest.role || 'user',
     };
 
     const savedUser = await this.userRepository.save(newUser);

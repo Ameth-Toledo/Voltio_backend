@@ -4,10 +4,10 @@ import pool from '../../../core/config/conn';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
 export class MySQLUserRepository implements IUserRepository {
-  async save(user: Omit<User, 'id' | 'createdAt'>): Promise<User> {
+  async save(user: Omit<User, 'id' | 'created_at'>): Promise<User> {
     const query = `
-      INSERT INTO users (name, secondname, lastname, secondlastname, email, password, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, NOW())
+      INSERT INTO users (name, secondname, lastname, secondlastname, email, password, phone, image_profile, role, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
     `;
 
     const [result] = await pool.execute<ResultSetHeader>(query, [
@@ -17,6 +17,9 @@ export class MySQLUserRepository implements IUserRepository {
       user.secondlastname,
       user.email,
       user.password,
+      user.phone,
+      user.image_profile,
+      user.role,
     ]);
 
     const [rows] = await pool.execute<RowDataPacket[]>(
@@ -33,7 +36,10 @@ export class MySQLUserRepository implements IUserRepository {
       secondlastname: row.secondlastname,
       email: row.email,
       password: row.password,
-      createdAt: new Date(row.created_at),
+      phone: row.phone,
+      image_profile: row.image_profile,
+      role: row.role,
+      created_at: new Date(row.created_at),
     };
   }
 
@@ -54,7 +60,10 @@ export class MySQLUserRepository implements IUserRepository {
       secondlastname: row.secondlastname,
       email: row.email,
       password: row.password,
-      createdAt: new Date(row.created_at),
+      phone: row.phone,
+      image_profile: row.image_profile,
+      role: row.role,
+      created_at: new Date(row.created_at),
     };
   }
 
@@ -75,7 +84,10 @@ export class MySQLUserRepository implements IUserRepository {
       secondlastname: row.secondlastname,
       email: row.email,
       password: row.password,
-      createdAt: new Date(row.created_at),
+      phone: row.phone,
+      image_profile: row.image_profile,
+      role: row.role,
+      created_at: new Date(row.created_at),
     };
   }
 
@@ -92,7 +104,10 @@ export class MySQLUserRepository implements IUserRepository {
       secondlastname: row.secondlastname,
       email: row.email,
       password: row.password,
-      createdAt: new Date(row.created_at),
+      phone: row.phone,
+      image_profile: row.image_profile,
+      role: row.role,
+      created_at: new Date(row.created_at),
     }));
   }
 

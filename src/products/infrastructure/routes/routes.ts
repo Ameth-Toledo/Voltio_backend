@@ -1,0 +1,38 @@
+import { Router, Request, Response } from 'express';
+import { CreateProductController } from '../controllers/CreateProductController';
+import { GetAllProductsController } from '../controllers/GetAllProductsController';
+import { GetProductByIdController } from '../controllers/GetProductByIdController';
+import { UpdateProductController } from '../controllers/UpdateProductController';
+import { DeleteProductController } from '../controllers/DeleteProductController';
+import { GetProductsByCategoryController } from '../controllers/GetProductsByCategoryController';
+import { jwtMiddleware } from '../../../core/security/jwt_middleware';
+import { upload } from '../../../core/config/multer_config';
+
+export function configureProductRoutes(
+  createProductCtrl: CreateProductController,
+  getAllProductsCtrl: GetAllProductsController,
+  getProductByIdCtrl: GetProductByIdController,
+  updateProductCtrl: UpdateProductController,
+  deleteProductCtrl: DeleteProductController,
+  getProductsByCategoryCtrl: GetProductsByCategoryController
+): Router {
+  const router = Router();
+
+  router.get('/products', (req: Request, res: Response) => getAllProductsCtrl.handle(req, res));
+  router.get('/products/:id', (req: Request, res: Response) => getProductByIdCtrl.handle(req, res));
+  router.get('/products/category/:id_categoria', (req: Request, res: Response) => 
+    getProductsByCategoryCtrl.handle(req, res)
+  );
+
+  router.post('/products', jwtMiddleware, upload.single('imagen'), (req: Request, res: Response) => 
+    createProductCtrl.handle(req, res)
+  );
+  router.put('/products/:id', jwtMiddleware, upload.single('imagen'), (req: Request, res: Response) => 
+    updateProductCtrl.handle(req, res)
+  );
+  router.delete('/products/:id', jwtMiddleware, (req: Request, res: Response) => 
+    deleteProductCtrl.handle(req, res)
+  );
+
+  return router;
+}

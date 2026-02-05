@@ -1,7 +1,7 @@
 import { User } from './entities/User';
 
 export interface IUserRepository {
-  save(user: Omit<User, 'id' | 'createdAt'>): Promise<User>;
+  save(user: Omit<User, 'id' | 'created_at'>): Promise<User>;
   getByEmail(email: string): Promise<User | null>;
   getByID(id: number): Promise<User | null>;
   getAll(): Promise<User[]>;
