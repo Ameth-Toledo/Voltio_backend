@@ -50,6 +50,9 @@ CREATE TABLE ordenes (
     estado_orden ENUM('pendiente', 'confirmada', 'en_proceso', 'completada', 'cancelada') DEFAULT 'pendiente',
     monto_total DECIMAL(10, 2) NOT NULL,
     descripcion TEXT,
+    direccion VARCHAR(255) NOT NULL,
+    metodo_pago_tipo ENUM('tarjeta', 'efectivo') NOT NULL,
+    metodo_pago_ultimos4 VARCHAR(4) DEFAULT NULL,
     CONSTRAINT fk_usuario_orden FOREIGN KEY (id_usuario) REFERENCES users(id) ON DELETE CASCADE
 );
 

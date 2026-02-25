@@ -13,12 +13,15 @@ async createOrden(data: OrdenRequest): Promise<Orden> {
         await connection.beginTransaction();
 
         // 1. Insertar la cabecera de la orden
-        const queryOrden = 'INSERT INTO ordenes (id_usuario, fecha_orden, estado_orden, monto_total, descripcion) VALUES (?, NOW(), ?, ?, ?)';
+        const queryOrden = 'INSERT INTO ordenes (id_usuario, fecha_orden, estado_orden, monto_total, descripcion, direccion, metodo_pago_tipo, metodo_pago_ultimos4) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?)';
         const [result] = await connection.execute<ResultSetHeader>(queryOrden, [
             data.id_usuario,
             data.estado_orden,
             data.monto_total,
             data.descripcion || null,
+            data.direccion,
+            data.metodo_pago.tipo,
+            data.metodo_pago.ultimos4 || null
         ]);
 
         const newId = result.insertId;
@@ -49,34 +52,39 @@ async createOrden(data: OrdenRequest): Promise<Orden> {
     }
 }
   async getOrdenById(id: number): Promise<Orden | null> {
-  const query = `
-    SELECT o.*, od.id_producto, od.cantidad, od.precio_unitario, p.nombre as nombre_producto
-    FROM ordenes o
-    LEFT JOIN orden_detalles od ON o.id_orden = od.id_orden
-    LEFT JOIN productos p ON od.id_producto = p.id_producto
-    WHERE o.id_orden = ?`;
+    const query = `
+      SELECT o.*, od.id_producto, od.cantidad, od.precio_unitario, p.nombre as nombre_producto
+      FROM ordenes o
+      LEFT JOIN orden_detalles od ON o.id_orden = od.id_orden
+      LEFT JOIN productos p ON od.id_producto = p.id_producto
+      WHERE o.id_orden = ?`;
 
-  const [rows] = await pool.execute<RowDataPacket[]>(query, [id]);
+    const [rows] = await pool.execute<RowDataPacket[]>(query, [id]);
 
-  if (rows.length === 0) return null;
+    if (rows.length === 0) return null;
 
-  // Como el JOIN devuelve una fila por cada producto, agrupamos
-  const orden: Orden = {
-    id_orden: rows[0].id_orden,
-    id_usuario: rows[0].id_usuario,
-    fecha_orden: rows[0].fecha_orden,
-    estado_orden: rows[0].estado_orden,
-    monto_total: rows[0].monto_total,
-    descripcion: rows[0].descripcion,
-    productos: rows[0].id_producto ? rows.map(row => ({
-      id_producto: row.id_producto,
-      nombre: row.nombre_producto,
-      cantidad: row.cantidad,
-      precio_unitario: row.precio_unitario
-    })) : []
-  };
+    // Como el JOIN devuelve una fila por cada producto, agrupamos
+    const orden: Orden = {
+      id_orden: rows[0].id_orden,
+      id_usuario: rows[0].id_usuario,
+      fecha_orden: rows[0].fecha_orden,
+      estado_orden: rows[0].estado_orden,
+      monto_total: rows[0].monto_total,
+      descripcion: rows[0].descripcion,
+      direccion: rows[0].direccion,
+      metodo_pago: {
+        tipo: rows[0].metodo_pago_tipo,
+        ultimos4: rows[0].metodo_pago_ultimos4 || undefined
+      },
+      productos: rows[0].id_producto ? rows.map(row => ({
+        id_producto: row.id_producto,
+        nombre: row.nombre_producto,
+        cantidad: row.cantidad,
+        precio_unitario: row.precio_unitario
+      })) : []
+    };
 
-  return orden;
+    return orden;
 }
 
   async getAllOrdenes(): Promise<Orden[]> {
@@ -98,6 +106,11 @@ async createOrden(data: OrdenRequest): Promise<Orden> {
       estado_orden: row.estado_orden,
       monto_total: row.monto_total,
       descripcion: row.descripcion,
+      direccion: row.direccion,
+      metodo_pago: {
+        tipo: row.metodo_pago_tipo,
+        ultimos4: row.metodo_pago_ultimos4 || undefined
+      },
       productos: detalles.map(d => ({
         id_producto: d.id_producto,
         nombre: d.nombre,
@@ -133,6 +146,11 @@ async getOrdenesByUsuarioId(id_usuario: number): Promise<Orden[]> {
         estado_orden: row.estado_orden,
         monto_total: row.monto_total,
         descripcion: row.descripcion,
+        direccion: row.direccion,
+        metodo_pago: {
+          tipo: row.metodo_pago_tipo,
+          ultimos4: row.metodo_pago_ultimos4 || undefined
+        },
         productos: detalles.map(d => ({
           id_producto: d.id_producto,
           nombre: d.nombre,

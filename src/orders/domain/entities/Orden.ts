@@ -13,5 +13,10 @@ export interface Orden {
   estado_orden: string;
   monto_total: number;
   descripcion?: string;
-  productos: OrdenItem[]; // <--- Agregamos la lista de productos
+  direccion: string;
+  metodo_pago: {
+    tipo: 'tarjeta' | 'efectivo';
+    ultimos4?: string;
+  };
+  productos: OrdenItem[];
 }

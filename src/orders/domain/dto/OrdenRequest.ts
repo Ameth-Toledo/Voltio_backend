@@ -4,11 +4,16 @@ export interface OrdenRequest {
   estado_orden: string;
   monto_total: number;
   descripcion?: string;
+  direccion: string;
+  metodo_pago: {
+    tipo: 'tarjeta' | 'efectivo';
+    ultimos4?: string;
+  };
   productos: {
     id_producto: number;
     cantidad: number;
     precio_unitario: number;
-  }[]; // <--- Obligatorio para crear la orden
+  }[];
 }
 
 export interface OrdenUpdateRequest {

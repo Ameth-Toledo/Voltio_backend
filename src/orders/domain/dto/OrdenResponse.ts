@@ -7,6 +7,11 @@ export class OrdenResponse {
   estado_orden: string;
   monto_total: number;
   descripcion?: string;
+  direccion: string;
+  metodo_pago: {
+    tipo: 'tarjeta' | 'efectivo';
+    ultimos4?: string;
+  };
   productos: any[];
 
   constructor(orden: Orden) {
@@ -16,6 +21,8 @@ export class OrdenResponse {
     this.estado_orden = orden.estado_orden;
     this.monto_total = orden.monto_total;
     this.descripcion = orden.descripcion;
+    this.direccion = orden.direccion;
+    this.metodo_pago = orden.metodo_pago;
     this.productos = orden.productos;
   }
 }
