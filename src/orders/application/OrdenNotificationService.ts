@@ -1,103 +1,85 @@
-import axios from 'axios';
+import mqtt from 'mqtt';
 
-const WEBSOCKET_SERVER_URL = process.env.WEBSOCKET_URL || 'http://localhost:3000';
-const WEBSOCKET_TIMEOUT = 5000;
+const MQTT_BROKER_URL = process.env.MQTT_BROKER || 'mqtt://localhost:1883';
+
+const MQTT_TOPICS = {
+  ordenes_nuevo: 'ordenes/nuevo',
+  ordenes_update: 'ordenes/actualizar',
+};
+
+// Cliente MQTT compartido (singleton)
+let mqttClient: mqtt.MqttClient | null = null;
+
+function getMqttClient(): mqtt.MqttClient {
+  if (!mqttClient || !mqttClient.connected) {
+    mqttClient = mqtt.connect(MQTT_BROKER_URL);
+
+    mqttClient.on('connect', () => {
+      console.log(`✅ API conectada al broker MQTT: ${MQTT_BROKER_URL}`);
+    });
+
+    mqttClient.on('error', (err) => {
+      console.error(`❌ Error en conexión MQTT:`, err.message);
+    });
+  }
+  return mqttClient;
+}
 
 export class OrdenNotificationService {
-  static async notificarNuevaOrden(orden: any): Promise<any> {
+
+  static async notificarNuevaOrden(orden: any): Promise<void> {
     try {
-      console.log(`\n📤 Enviando nueva orden a MQTT...`);
-      console.log(`   ID Orden: ${orden.id_orden}`);
-      console.log(`   ID Usuario: ${orden.id_usuario}`);
-      console.log(`   Monto: $${orden.monto_total}`);
-      
-      const response = await axios.post(
-        `${WEBSOCKET_SERVER_URL}/ordenes/publicar`,
-        {
-          id_orden: orden.id_orden,
-          id_usuario: orden.id_usuario,
-          fecha_orden: orden.fecha_orden,
-          estado_orden: orden.estado_orden,
-          monto_total: orden.monto_total,
-          descripcion: orden.descripcion
-        },
-        { timeout: WEBSOCKET_TIMEOUT }
-      );
-
-      console.log(`✅ Orden publicada a MQTT exitosamente`);
-      console.log(`   Tópico: ordenes/nuevo`);
-      
-      return response.data;
-    } catch (error: any) {
-      console.warn(`⚠️  Error al publicar orden a MQTT`);
-      console.warn(`   Detalles: ${error.message}`);
-      return null;
-    }
-  }
-
-  /**
-   * Notificar actualización de orden a MQTT
-   * @param orden - Datos de la orden actualizada
-   */
-  static async notificarActualizacionOrden(orden: any): Promise<any> {
-    try {
-      console.log(`\n📤 Actualizando orden en MQTT...`);
-      console.log(`   ID Orden: ${orden.id_orden}`);
-      console.log(`   Nuevo Estado: ${orden.estado_orden}`);
-      
-      const response = await axios.put(
-        `${WEBSOCKET_SERVER_URL}/ordenes/actualizar`,
-        {
-          id_orden: orden.id_orden,
-          id_usuario: orden.id_usuario,
-          estado_orden: orden.estado_orden,
-          monto_total: orden.monto_total,
-          descripcion: orden.descripcion
-        },
-        { timeout: WEBSOCKET_TIMEOUT }
-      );
-
-      console.log(`✅ Orden actualizada en MQTT exitosamente`);
-      console.log(`   Tópico: ordenes/actualizar`);
-      
-      return response.data;
-    } catch (error: any) {
-      console.warn(`⚠️  Error al actualizar orden en MQTT`);
-      console.warn(`   Detalles: ${error.message}`);
-      return null;
-    }
-  }
-
-
-  static async verificarEstadoWebSocket(): Promise<any> {
-    try {
-      const response = await axios.get(`${WEBSOCKET_SERVER_URL}/`, {
-        timeout: WEBSOCKET_TIMEOUT
+      const client = getMqttClient();
+      const payload = JSON.stringify({
+        id_orden: orden.id_orden,
+        id_usuario: orden.id_usuario,
+        fecha_orden: orden.fecha_orden,
+        estado_orden: orden.estado_orden,
+        monto_total: orden.monto_total,
+        descripcion: orden.descripcion,
+        direccion: orden.direccion,
+        metodo_pago: orden.metodo_pago,
+        timestamp: new Date().toISOString()
       });
-      
-      console.log(`✅ WebSocket + MQTT conectado`);
-      console.log(`   Clientes Socket.IO: ${response.data.clientesConectadosSocket}`);
-      console.log(`   MQTT Broker: ${response.data.mqttConectado ? 'conectado' : 'desconectado'}`);
-      
-      return response.data;
+
+      client.publish(MQTT_TOPICS.ordenes_nuevo, payload, { qos: 1 }, (err) => {
+        if (err) {
+          console.warn(`⚠️  Error publicando nueva orden a MQTT: ${err.message}`);
+        } else {
+          console.log(`✅ Nueva orden publicada al broker MQTT`);
+          console.log(`   Tópico: ${MQTT_TOPICS.ordenes_nuevo}`);
+          console.log(`   ID Orden: ${orden.id_orden}`);
+        }
+      });
     } catch (error: any) {
-      console.error(`❌ WebSocket NO disponible en ${WEBSOCKET_SERVER_URL}`);
-      console.error(`   Error: ${error.message}`);
-      return null;
+      console.warn(`⚠️  Error al publicar orden a MQTT: ${error.message}`);
     }
   }
 
-
-  static async obtenerEstadisticas(): Promise<any> {
+  static async notificarActualizacionOrden(orden: any): Promise<void> {
     try {
-      const response = await axios.get(`${WEBSOCKET_SERVER_URL}/stats`, {
-        timeout: WEBSOCKET_TIMEOUT
+      const client = getMqttClient();
+      const payload = JSON.stringify({
+        id_orden: orden.id_orden,
+        id_usuario: orden.id_usuario,
+        estado_orden: orden.estado_orden,
+        monto_total: orden.monto_total,
+        descripcion: orden.descripcion,
+        timestamp: new Date().toISOString()
       });
-      
-      return response.data;
+
+      client.publish(MQTT_TOPICS.ordenes_update, payload, { qos: 1 }, (err) => {
+        if (err) {
+          console.warn(`⚠️  Error publicando actualización de orden a MQTT: ${err.message}`);
+        } else {
+          console.log(`✅ Actualización de orden publicada al broker MQTT`);
+          console.log(`   Tópico: ${MQTT_TOPICS.ordenes_update}`);
+          console.log(`   ID Orden: ${orden.id_orden}`);
+          console.log(`   Nuevo Estado: ${orden.estado_orden}`);
+        }
+      });
     } catch (error: any) {
-      console.warn(`❌ No se pudo obtener estadísticas`);
-      return null;
+      console.warn(`⚠️  Error al actualizar orden en MQTT: ${error.message}`);
     }
   }
 }
