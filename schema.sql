@@ -21,7 +21,6 @@ CREATE TABLE categorias (
     nombre_categoria VARCHAR(50) NOT NULL UNIQUE
 );
 
--- 3. Tabla de Productos (Electrónica + Cloudinary)
 CREATE TABLE productos (
     id_producto INT AUTO_INCREMENT PRIMARY KEY,
     sku VARCHAR(50) UNIQUE NOT NULL,
@@ -65,4 +64,14 @@ CREATE TABLE orden_detalles (
     subtotal DECIMAL(10, 2) NOT NULL,
     CONSTRAINT fk_orden_detalle FOREIGN KEY (id_orden) REFERENCES ordenes(id_orden) ON DELETE CASCADE,
     CONSTRAINT fk_producto_detalle FOREIGN KEY (id_producto) REFERENCES productos(id_producto) ON DELETE CASCADE
+);
+
+CREATE TABLE addresses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    alias VARCHAR(50),
+    direccion VARCHAR(255) NOT NULL,
+    es_predeterminada BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- igual que users
+    CONSTRAINT fk_usuario_address FOREIGN KEY (id_usuario) REFERENCES users(id) ON DELETE CASCADE  -- nombre explícito + CASCADE
 );

@@ -13,6 +13,8 @@ import { createProductController, getAllProductsController, getProductByIdContro
 import { createCategoriaController, getAllCategoriasController, getCategoriaByIdController, updateCategoriaController, deleteCategoriaController } from './src/categories/infrastructure/dependencies';
 import { createEspecificacionController, getAllEspecificacionesController, getEspecificacionByIdController, getEspecificacionesByProductIdController, updateEspecificacionController, deleteEspecificacionController } from './src/specifications/infrastructure/dependencies';
 import { createOrdenController, getAllOrdenesController, getOrdenByIdController, getOrdenesByUsuarioIdController, updateOrdenController, deleteOrdenController } from './src/orders/infrastructure/dependencies';
+import { configureDirectionRoutes } from './src/directions/infrastructure/routes/routes'
+import { createDirectionController, getAllDirectionController, getDirectionByIdController, getDirectionsByUserIdController, updateDirectionController, deleteDirectionController } from './src/directions/infrastructure/dependencies'
 
 dotenv.config();
 
@@ -73,11 +75,21 @@ const ordenesRoutes = configureOrdenesRoutes(
   deleteOrdenController
 );
 
+const directionRoutes = configureDirectionRoutes(
+    createDirectionController,
+    getAllDirectionController,
+    getDirectionByIdController,
+    getDirectionsByUserIdController,
+    updateDirectionController,
+    deleteDirectionController
+)
+
 app.use('/api', userRoutes);
 app.use('/api', productRoutes);
 app.use('/api', categoriasRoutes);
 app.use('/api', especificacionesRoutes);
 app.use('/api', ordenesRoutes);
+app.use('/api', directionRoutes)
 
 app.get('/', (req, res) => {
   res.json({ message: 'Hexagonal Architecture API - Running' });

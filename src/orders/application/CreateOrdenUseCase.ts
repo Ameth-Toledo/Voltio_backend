@@ -19,10 +19,8 @@ export class CreateOrdenUseCase {
       throw new Error('El estado de la orden es obligatorio');
     }
 
-    // Crear orden en BD
     const orden = await this.ordenRepository.createOrden(data);
 
-    // 🔥 ENVIAR MENSAJE A MQTT
     console.log(`\n📡 Notificando al servidor MQTT`);
     await OrdenNotificationService.notificarNuevaOrden(orden);
 
