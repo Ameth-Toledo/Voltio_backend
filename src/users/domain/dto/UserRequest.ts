@@ -20,6 +20,12 @@ export interface LoginRequest {
   firebase_token?: string | null;
 }
 
+export interface GoogleLoginRequest {
+  idToken: string;
+  accountType?: AccountType;
+  firebase_token?: string | null;
+}
+
 export interface UpdateUserRequest {
   name?: string;
   secondname?: string;

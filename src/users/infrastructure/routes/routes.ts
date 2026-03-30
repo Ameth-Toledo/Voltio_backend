@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { AuthController } from '../controllers/AuthController';
 import { CreateUserController } from '../controllers/CreateUserController';
 import { RegisterCompanyController } from '../controllers/RegisterCompanyController';
+import { GoogleRegisterCompanyController } from '../controllers/GoogleRegisterCompanyController';
 import { GetAllUsersController } from '../controllers/GetAllUsersController';
 import { GetUserByIdController } from '../controllers/GetUserByIdController';
 import { UpdateUserController } from '../controllers/UpdateUserController';
@@ -13,6 +14,7 @@ export function configureUserRoutes(
   authCtrl: AuthController,
   createUserCtrl: CreateUserController,
   registerCompanyCtrl: RegisterCompanyController,
+  googleRegisterCompanyCtrl: GoogleRegisterCompanyController,
   getAllUsersCtrl: GetAllUsersController,
   getUserByIdCtrl: GetUserByIdController,
   updateUserCtrl: UpdateUserController,
@@ -21,8 +23,10 @@ export function configureUserRoutes(
   const router = Router();
 
   router.post('/auth/login', (req, res) => authCtrl.login(req, res));
+  router.post('/auth/google', (req, res) => authCtrl.googleLogin(req, res));
   router.post('/auth/register', upload.single('imagen'), (req, res) => createUserCtrl.execute(req, res));
   router.post('/auth/register/company', upload.single('imagen'), (req, res) => registerCompanyCtrl.execute(req, res));
+  router.post('/auth/google/company', (req, res) => googleRegisterCompanyCtrl.execute(req, res));
   router.post('/auth/logout', jwtMiddleware, (req, res) => authCtrl.logout(req, res));
   router.post('/auth/refresh', (req, res) => authCtrl.refreshToken(req, res));
   router.get('/auth/profile', jwtMiddleware, (req, res) => authCtrl.getProfile(req, res));

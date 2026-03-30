@@ -9,7 +9,7 @@ import { configureCategoriasRoutes } from './src/categories/infrastructure/route
 import { configureEspecificacionesRoutes } from './src/specifications/infrastructure/routes/routes';
 import { configureOrdenesRoutes } from './src/orders/infrastructure/routes/routes';
 import { configureEmpresasRoutes } from './src/empresas/infrastructure/routes/routes';
-import { authController, createUserController, registerCompanyController, getAllUsersController, getUserByIdController, updateUserController, deleteUserController, } from './src/users/infrastructure/dependencies';
+import { authController, createUserController, registerCompanyController, googleRegisterCompanyController, getAllUsersController, getUserByIdController, updateUserController, deleteUserController, } from './src/users/infrastructure/dependencies';
 import { createProductController, getAllProductsController, getProductByIdController, updateProductController, deleteProductController, getProductsByCategoryController } from './src/products/infrastructure/dependencies';
 import { createCategoriaController, getAllCategoriasController, getCategoriaByIdController, updateCategoriaController, deleteCategoriaController } from './src/categories/infrastructure/dependencies';
 import { createEspecificacionController, getAllEspecificacionesController, getEspecificacionByIdController, getEspecificacionesByProductIdController, updateEspecificacionController, deleteEspecificacionController } from './src/specifications/infrastructure/dependencies';
@@ -37,6 +37,7 @@ const userRoutes = configureUserRoutes(
   authController,
   createUserController,
   registerCompanyController,
+  googleRegisterCompanyController,
   getAllUsersController,
   getUserByIdController,
   updateUserController,

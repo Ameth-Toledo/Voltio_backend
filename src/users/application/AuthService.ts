@@ -1,8 +1,12 @@
 import { IUserRepository } from '../domain/IUserRepository';
 import { User } from '../domain/entities/User';
-import { UserRequest, LoginRequest } from '../domain/dto/UserRequest';
+import { UserRequest, LoginRequest, GoogleLoginRequest } from '../domain/dto/UserRequest';
 import { hashPassword, checkPassword } from '../../core/security/hash';
 import { isValidEmail } from '../domain/utils/EmailValidator';
+import { OAuth2Client } from 'google-auth-library';
+
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 export class AuthService {
   constructor(private userRepository: IUserRepository) {}
@@ -97,6 +101,58 @@ export class AuthService {
       ...user,
       firebase_token: normalizedToken,
     };
+  }
+
+  async googleLogin(googleRequest: GoogleLoginRequest): Promise<User> {
+    if (!GOOGLE_CLIENT_ID) {
+      throw new Error('Google Client ID no configurado');
+    }
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: googleRequest.idToken,
+      audience: GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      throw new Error('Token de Google inválido');
+    }
+
+    const email = payload.email.trim().toLowerCase();
+    const name = payload.given_name || 'Usuario';
+    const lastname = payload.family_name || '';
+    const picture = payload.picture || null;
+
+    let user = await this.userRepository.getByEmail(email);
+
+    if (!user) {
+      const accountType = googleRequest.accountType || 'person';
+      const role = accountType === 'company' ? 'admin' : 'user';
+
+      const newUser: Omit<User, 'id' | 'created_at'> = {
+        name,
+        secondname: null,
+        lastname,
+        secondlastname: null,
+        email,
+        password: 'GOOGLE_AUTH_EXTERNAL',
+        phone: null,
+        image_profile: picture,
+        role,
+        account_type: accountType,
+        firebase_token: this.normalizeOptionalString(googleRequest.firebase_token),
+      };
+
+      user = await this.userRepository.save(newUser);
+    } else {
+      if (googleRequest.firebase_token !== undefined) {
+        const firebaseToken = this.normalizeOptionalString(googleRequest.firebase_token);
+        await this.userRepository.updateFirebaseToken(user.id, firebaseToken);
+        user.firebase_token = firebaseToken;
+      }
+    }
+
+    return user;
   }
 
   private normalizeOptionalString(value?: string | null): string | null {

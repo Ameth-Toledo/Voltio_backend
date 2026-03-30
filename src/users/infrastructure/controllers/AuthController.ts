@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { AuthService } from '../../application/AuthService';
-import { LoginRequest } from '../../domain/dto/UserRequest';
+import { LoginRequest, GoogleLoginRequest } from '../../domain/dto/UserRequest';
 import { LoginResponse, toUserResponse } from '../../domain/dto/UserResponse';
 import { generateJWT, generateRefreshToken, setAuthCookie, setRefreshCookie, clearAuthCookies, validateRefreshToken } from '../../../core/security/auth';
 
@@ -23,6 +23,40 @@ export class AuthController {
         message: 'Login exitoso',
         accessToken: accessToken,
         refreshToken: refreshToken,
+        user: toUserResponse(user),
+      };
+
+      res.status(200).json(response);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(401).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: 'Error interno del servidor' });
+      }
+    }
+  }
+
+  async googleLogin(req: Request, res: Response): Promise<void> {
+    try {
+      const googleRequest: GoogleLoginRequest = req.body;
+
+      if (!googleRequest.idToken) {
+        res.status(400).json({ error: 'idToken es requerido' });
+        return;
+      }
+
+      const user = await this.authService.googleLogin(googleRequest);
+
+      const accessToken = generateJWT(user.id, user.email, user.role);
+      const refreshToken = generateRefreshToken(user.id);
+
+      setAuthCookie(res, accessToken);
+      setRefreshCookie(res, refreshToken);
+
+      const response: LoginResponse = {
+        message: 'Login con Google exitoso',
+        accessToken,
+        refreshToken,
         user: toUserResponse(user),
       };
 
