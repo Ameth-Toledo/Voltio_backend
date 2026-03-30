@@ -17,13 +17,10 @@ export class MySQLUserRepository implements IUserRepository {
         image_profile,
         role,
         account_type,
-        company_name,
-        company_tax_id,
-        company_address,
         firebase_token,
         created_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
     `;
 
     const [result] = await pool.execute<ResultSetHeader>(query, [
@@ -37,9 +34,6 @@ export class MySQLUserRepository implements IUserRepository {
       user.image_profile,
       user.role,
       user.account_type,
-      user.company_name,
-      user.company_tax_id,
-      user.company_address,
       user.firebase_token,
     ]);
 
@@ -84,7 +78,7 @@ export class MySQLUserRepository implements IUserRepository {
   async update(user: User): Promise<void> {
     const query = `
       UPDATE users 
-      SET name = ?, secondname = ?, lastname = ?, secondlastname = ?, email = ?, password = ?, phone = ?, image_profile = ?, role = ?, account_type = ?, company_name = ?, company_tax_id = ?, company_address = ?, firebase_token = ?
+      SET name = ?, secondname = ?, lastname = ?, secondlastname = ?, email = ?, password = ?, phone = ?, image_profile = ?, role = ?, account_type = ?, firebase_token = ?
       WHERE id = ?
     `;
 
@@ -99,9 +93,6 @@ export class MySQLUserRepository implements IUserRepository {
       user.image_profile,
       user.role,
       user.account_type,
-      user.company_name,
-      user.company_tax_id,
-      user.company_address,
       user.firebase_token,
       user.id,
     ]);
@@ -153,9 +144,6 @@ export class MySQLUserRepository implements IUserRepository {
       image_profile: row.image_profile,
       role: row.role,
       account_type: row.account_type ?? 'person',
-      company_name: row.company_name ?? null,
-      company_tax_id: row.company_tax_id ?? null,
-      company_address: row.company_address ?? null,
       firebase_token: row.firebase_token ?? null,
       created_at: new Date(row.created_at),
     };

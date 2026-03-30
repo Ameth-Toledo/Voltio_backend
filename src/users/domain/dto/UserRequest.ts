@@ -11,9 +11,6 @@ export interface UserRequest {
   image_profile?: string;
   role?: UserRole;
   account_type?: AccountType;
-  company_name?: string;
-  company_tax_id?: string;
-  company_address?: string;
   firebase_token?: string | null;
 }
 
@@ -31,8 +28,5 @@ export interface UpdateUserRequest {
   email?: string;
   phone?: string;
   image_profile?: string;
-  company_name?: string;
-  company_tax_id?: string;
-  company_address?: string;
   firebase_token?: string | null;
 }

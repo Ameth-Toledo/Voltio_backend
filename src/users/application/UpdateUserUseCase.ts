@@ -53,15 +53,6 @@ export class UpdateUserUseCase {
       image_profile: updateRequest.image_profile !== undefined
         ? this.normalizeOptionalString(updateRequest.image_profile)
         : existingUser.image_profile,
-      company_name: updateRequest.company_name !== undefined
-        ? this.normalizeOptionalString(updateRequest.company_name)
-        : existingUser.company_name,
-      company_tax_id: updateRequest.company_tax_id !== undefined
-        ? this.normalizeOptionalString(updateRequest.company_tax_id)
-        : existingUser.company_tax_id,
-      company_address: updateRequest.company_address !== undefined
-        ? this.normalizeOptionalString(updateRequest.company_address)
-        : existingUser.company_address,
       firebase_token: updateRequest.firebase_token !== undefined
         ? this.normalizeOptionalString(updateRequest.firebase_token)
         : existingUser.firebase_token,

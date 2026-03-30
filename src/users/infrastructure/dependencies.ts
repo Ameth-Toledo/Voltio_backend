@@ -12,6 +12,7 @@ import { GetAllUsersController } from './controllers/GetAllUsersController';
 import { GetUserByIdController } from './controllers/GetUserByIdController';
 import { UpdateUserController } from './controllers/UpdateUserController';
 import { DeleteUserController } from './controllers/DeleteUserController';
+import { empresaRepository } from '../../empresas/infrastructure/dependencies';
 
 const userRepository = new MySQLUserRepository();
 
@@ -24,7 +25,7 @@ const deleteUserUseCase = new DeleteUserUseCase(userRepository);
 
 export const authController = new AuthController(authService);
 export const createUserController = new CreateUserController(createUserUseCase);
-export const registerCompanyController = new RegisterCompanyController(createUserUseCase);
+export const registerCompanyController = new RegisterCompanyController(createUserUseCase, empresaRepository);
 export const getAllUsersController = new GetAllUsersController(getAllUsersUseCase);
 export const getUserByIdController = new GetUserByIdController(getUserByIdUseCase);
 export const updateUserController = new UpdateUserController(updateUserUseCase);

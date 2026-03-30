@@ -41,10 +41,6 @@ export class AuthService {
 
   async register(userRequest: UserRequest): Promise<User> {
     const email = userRequest.email.trim().toLowerCase();
-    const accountType = userRequest.account_type || 'person';
-    const companyName = this.normalizeOptionalString(userRequest.company_name);
-    const companyTaxId = this.normalizeOptionalString(userRequest.company_tax_id);
-    const companyAddress = this.normalizeOptionalString(userRequest.company_address);
 
     if (!isValidEmail(email)) {
       throw new Error('Email invalido');
@@ -60,16 +56,6 @@ export class AuthService {
       throw new Error('La contraseña debe tener al menos 6 caracteres');
     }
 
-    if (accountType === 'company') {
-      if (!companyName) {
-        throw new Error('El nombre de la empresa es obligatorio');
-      }
-
-      if (!companyAddress) {
-        throw new Error('La direccion de la empresa es obligatoria');
-      }
-    }
-
     const hashedPassword = await hashPassword(userRequest.password);
 
     const newUser: Omit<User, 'id' | 'created_at'> = {
@@ -81,11 +67,8 @@ export class AuthService {
       password: hashedPassword,
       phone: this.normalizeOptionalString(userRequest.phone),
       image_profile: this.normalizeOptionalString(userRequest.image_profile),
-      role: accountType === 'company' ? 'admin' : userRequest.role || 'user',
-      account_type: accountType,
-      company_name: accountType === 'company' ? companyName : null,
-      company_tax_id: accountType === 'company' ? companyTaxId : null,
-      company_address: accountType === 'company' ? companyAddress : null,
+      role: userRequest.role || 'user',
+      account_type: userRequest.account_type || 'person',
       firebase_token: this.normalizeOptionalString(userRequest.firebase_token),
     };
 

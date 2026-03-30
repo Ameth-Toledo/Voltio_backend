@@ -27,13 +27,15 @@ async createOrden(data: OrdenRequest): Promise<Orden> {
         const newId = result.insertId;
 
         // 2. Insertar los productos de la orden
-        const queryItems = 'INSERT INTO orden_detalles (id_orden, id_producto, cantidad, precio_unitario) VALUES (?, ?, ?, ?)';
+        const queryItems = 'INSERT INTO orden_detalles (id_orden, id_producto, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, ?, ?)';
         for (const item of data.productos) {
+            const subtotal = item.cantidad * item.precio_unitario;
             await connection.execute(queryItems, [
                 newId,
                 item.id_producto,
                 item.cantidad,
-                item.precio_unitario
+                item.precio_unitario,
+                subtotal
             ]);
         }
 

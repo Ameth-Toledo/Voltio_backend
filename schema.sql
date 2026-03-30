@@ -1,7 +1,8 @@
-CREATE DATABASE voltio;
+CREATE DATABASE IF NOT EXISTS voltio;
 
 USE voltio;
 
+-- 1. Tabla principal de Identidad y Acceso
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -12,28 +13,43 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     phone VARCHAR(20) DEFAULT NULL,
     image_profile VARCHAR(255) DEFAULT NULL,
-    role ENUM('user', 'technician', 'admin') NOT NULL DEFAULT 'user',
+    role ENUM('user', 'admin') NOT NULL DEFAULT 'user',
     account_type ENUM('person', 'company') NOT NULL DEFAULT 'person',
-    company_name VARCHAR(150) DEFAULT NULL,
-    company_tax_id VARCHAR(50) DEFAULT NULL,
-    company_address VARCHAR(255) DEFAULT NULL,
     firebase_token VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Si la tabla users ya existe en tu base actual, aplica manualmente:
--- ALTER TABLE users MODIFY role ENUM('user', 'technician', 'admin') NOT NULL DEFAULT 'user';
--- ALTER TABLE users ADD COLUMN account_type ENUM('person', 'company') NOT NULL DEFAULT 'person' AFTER role;
--- ALTER TABLE users ADD COLUMN company_name VARCHAR(150) DEFAULT NULL AFTER account_type;
--- ALTER TABLE users ADD COLUMN company_tax_id VARCHAR(50) DEFAULT NULL AFTER company_name;
--- ALTER TABLE users ADD COLUMN company_address VARCHAR(255) DEFAULT NULL AFTER company_tax_id;
--- ALTER TABLE users ADD COLUMN firebase_token VARCHAR(255) DEFAULT NULL AFTER company_address;
+-- 2. Tabla exclusiva para perfiles de Locales/Empresas
+CREATE TABLE empresas (
+    id_empresa INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL UNIQUE, 
+    nombre_comercial VARCHAR(150) NOT NULL,
+    direccion VARCHAR(255) NOT NULL,
+    telefono_contacto VARCHAR(20) NOT NULL,
+    correo_contacto VARCHAR(255) NOT NULL, 
+    logo_url VARCHAR(255) DEFAULT NULL,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_empresa_usuario FOREIGN KEY (id_usuario) REFERENCES users(id) ON DELETE CASCADE
+);
 
+-- 3. Tabla de Direcciones del usuario (tanto personas como empresas pueden tener varias)
+CREATE TABLE addresses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    alias VARCHAR(50),
+    direccion VARCHAR(255) NOT NULL,
+    es_predeterminada BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_usuario_address FOREIGN KEY (id_usuario) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- 4. Tabla de Categorías de Productos
 CREATE TABLE categorias (
     id_categoria INT AUTO_INCREMENT PRIMARY KEY,
     nombre_categoria VARCHAR(50) NOT NULL UNIQUE
 );
 
+-- 5. Tabla de Productos
 CREATE TABLE productos (
     id_producto INT AUTO_INCREMENT PRIMARY KEY,
     sku VARCHAR(50) UNIQUE NOT NULL,
@@ -47,6 +63,7 @@ CREATE TABLE productos (
     CONSTRAINT fk_categoria FOREIGN KEY (id_categoria) REFERENCES categorias(id_categoria) ON DELETE SET NULL
 );
 
+-- 6. Especificaciones técnicas de los productos
 CREATE TABLE especificaciones (
     id_especificacion INT AUTO_INCREMENT PRIMARY KEY,
     id_producto INT NOT NULL,
@@ -55,6 +72,7 @@ CREATE TABLE especificaciones (
     CONSTRAINT fk_producto FOREIGN KEY (id_producto) REFERENCES productos(id_producto) ON DELETE CASCADE
 );
 
+-- 7. Tabla de Órdenes (Pedidos)
 CREATE TABLE ordenes (
     id_orden INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario INT NOT NULL,
@@ -68,6 +86,7 @@ CREATE TABLE ordenes (
     CONSTRAINT fk_usuario_orden FOREIGN KEY (id_usuario) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- 8. Detalles de cada Orden (Carrito de compras guardado)
 CREATE TABLE orden_detalles (
     id_detalle INT AUTO_INCREMENT PRIMARY KEY,
     id_orden INT NOT NULL,
@@ -77,14 +96,4 @@ CREATE TABLE orden_detalles (
     subtotal DECIMAL(10, 2) NOT NULL,
     CONSTRAINT fk_orden_detalle FOREIGN KEY (id_orden) REFERENCES ordenes(id_orden) ON DELETE CASCADE,
     CONSTRAINT fk_producto_detalle FOREIGN KEY (id_producto) REFERENCES productos(id_producto) ON DELETE CASCADE
-);
-
-CREATE TABLE addresses (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario INT NOT NULL,
-    alias VARCHAR(50),
-    direccion VARCHAR(255) NOT NULL,
-    es_predeterminada BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- igual que users
-    CONSTRAINT fk_usuario_address FOREIGN KEY (id_usuario) REFERENCES users(id) ON DELETE CASCADE  -- nombre explícito + CASCADE
 );

@@ -11,10 +11,6 @@ export class CreateUserUseCase {
     const name = userRequest.name?.trim();
     const lastname = userRequest.lastname?.trim();
     const email = userRequest.email?.trim().toLowerCase();
-    const accountType = userRequest.account_type || 'person';
-    const companyName = this.normalizeOptionalString(userRequest.company_name);
-    const companyTaxId = this.normalizeOptionalString(userRequest.company_tax_id);
-    const companyAddress = this.normalizeOptionalString(userRequest.company_address);
 
     if (!name) {
       throw new Error('El nombre es obligatorio');
@@ -36,16 +32,6 @@ export class CreateUserUseCase {
       throw new Error('La contraseña debe tener al menos 6 caracteres');
     }
 
-    if (accountType === 'company') {
-      if (!companyName) {
-        throw new Error('El nombre de la empresa es obligatorio');
-      }
-
-      if (!companyAddress) {
-        throw new Error('La direccion de la empresa es obligatoria');
-      }
-    }
-
     const existingUser = await this.userRepository.getByEmail(email);
     if (existingUser) {
       throw new Error('El email ya esta registrado');
@@ -62,11 +48,8 @@ export class CreateUserUseCase {
       password: hashedPassword,
       phone: this.normalizeOptionalString(userRequest.phone),
       image_profile: this.normalizeOptionalString(userRequest.image_profile),
-      role: accountType === 'company' ? 'admin' : userRequest.role || 'user',
-      account_type: accountType,
-      company_name: accountType === 'company' ? companyName : null,
-      company_tax_id: accountType === 'company' ? companyTaxId : null,
-      company_address: accountType === 'company' ? companyAddress : null,
+      role: userRequest.role || 'user',
+      account_type: userRequest.account_type || 'person',
       firebase_token: this.normalizeOptionalString(userRequest.firebase_token),
     };
 
