@@ -16,7 +16,7 @@ export class CreateUserController {
         return;
       }
 
-      userRequest.role = 'user';
+      userRequest.role = userRequest.role === 'repartidor' ? 'repartidor' : 'user';
       userRequest.account_type = 'person';
 
       if (req.file) {
