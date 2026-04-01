@@ -11,10 +11,10 @@ import { configureOrdenesRoutes } from './src/orders/infrastructure/routes/route
 import { configureEmpresasRoutes } from './src/empresas/infrastructure/routes/routes';
 import { configureRepartidoresRoutes } from './src/repartidores/infrastructure/routes/routes';
 import { authController, createUserController, registerCompanyController, googleRegisterCompanyController, getAllUsersController, getUserByIdController, updateUserController, deleteUserController, } from './src/users/infrastructure/dependencies';
-import { createProductController, getAllProductsController, getProductByIdController, updateProductController, deleteProductController, getProductsByCategoryController } from './src/products/infrastructure/dependencies';
+import { createProductController, getAllProductsController, getProductByIdController, updateProductController, deleteProductController, getProductsByCategoryController, getProductsByEmpresaController } from './src/products/infrastructure/dependencies';
 import { createCategoriaController, getAllCategoriasController, getCategoriaByIdController, updateCategoriaController, deleteCategoriaController } from './src/categories/infrastructure/dependencies';
 import { createEspecificacionController, getAllEspecificacionesController, getEspecificacionByIdController, getEspecificacionesByProductIdController, updateEspecificacionController, deleteEspecificacionController } from './src/specifications/infrastructure/dependencies';
-import { createOrdenController, getAllOrdenesController, getOrdenByIdController, getOrdenesByUsuarioIdController, updateOrdenController, deleteOrdenController, asignarRepartidorController, getOrdenesListasParaRecoleccionController, getOrdenesByRepartidorIdController, cambiarEstadoOrdenRepartidorController } from './src/orders/infrastructure/dependencies';
+import { createOrdenController, getAllOrdenesController, getOrdenByIdController, getOrdenesByUsuarioIdController, updateOrdenController, deleteOrdenController, asignarRepartidorController, getOrdenesListasParaRecoleccionController, getOrdenesByRepartidorIdController, cambiarEstadoOrdenRepartidorController, getOrdenesByEmpresaIdController } from './src/orders/infrastructure/dependencies';
 import { createEmpresaController, getAllEmpresasController, getEmpresaByIdController, getEmpresaByUsuarioIdController, updateEmpresaController, deleteEmpresaController } from './src/empresas/infrastructure/dependencies';
 import { createRepartidorInfoController, updateRepartidorInfoController, getRepartidoresDisponiblesController, getRepartidorInfoByUsuarioIdController } from './src/repartidores/infrastructure/dependencies';
 import { configureDirectionRoutes } from './src/directions/infrastructure/routes/routes'
@@ -52,7 +52,8 @@ const productRoutes = configureProductRoutes(
   getProductByIdController,
   updateProductController,
   deleteProductController,
-  getProductsByCategoryController
+  getProductsByCategoryController,
+  getProductsByEmpresaController
 );
 
 const categoriasRoutes = configureCategoriasRoutes(
@@ -82,7 +83,8 @@ const ordenesRoutes = configureOrdenesRoutes(
   asignarRepartidorController,
   getOrdenesListasParaRecoleccionController,
   getOrdenesByRepartidorIdController,
-  cambiarEstadoOrdenRepartidorController
+  cambiarEstadoOrdenRepartidorController,
+  getOrdenesByEmpresaIdController
 );
 
 const directionRoutes = configureDirectionRoutes(

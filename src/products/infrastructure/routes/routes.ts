@@ -5,6 +5,7 @@ import { GetProductByIdController } from '../controllers/GetProductByIdControlle
 import { UpdateProductController } from '../controllers/UpdateProductController';
 import { DeleteProductController } from '../controllers/DeleteProductController';
 import { GetProductsByCategoryController } from '../controllers/GetProductsByCategoryController';
+import { GetProductsByEmpresaController } from '../controllers/GetProductsByEmpresaController';
 import { jwtMiddleware } from '../../../core/security/jwt_middleware';
 import { upload } from '../../../core/config/multer_config';
 
@@ -14,7 +15,8 @@ export function configureProductRoutes(
   getProductByIdCtrl: GetProductByIdController,
   updateProductCtrl: UpdateProductController,
   deleteProductCtrl: DeleteProductController,
-  getProductsByCategoryCtrl: GetProductsByCategoryController
+  getProductsByCategoryCtrl: GetProductsByCategoryController,
+  getProductsByEmpresaCtrl: GetProductsByEmpresaController
 ): Router {
   const router = Router();
 
@@ -22,6 +24,9 @@ export function configureProductRoutes(
   router.get('/products/:id', jwtMiddleware, (req: Request, res: Response) => getProductByIdCtrl.handle(req, res));
   router.get('/products/category/:id_categoria', jwtMiddleware, (req: Request, res: Response) => 
     getProductsByCategoryCtrl.handle(req, res)
+  );
+  router.get('/products/empresa/:id_empresa', jwtMiddleware, (req: Request, res: Response) => 
+    getProductsByEmpresaCtrl.handle(req, res)
   );
 
   router.post('/products', jwtMiddleware, upload.single('imagen'), (req: Request, res: Response) => 

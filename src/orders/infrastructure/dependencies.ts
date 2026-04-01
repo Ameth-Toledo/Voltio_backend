@@ -9,6 +9,7 @@ import { AsignarRepartidorUseCase } from '../application/AsignarRepartidorUseCas
 import { GetOrdenesListasParaRecoleccionUseCase } from '../application/GetOrdenesListasParaRecoleccionUseCase';
 import { GetOrdenesByRepartidorIdUseCase } from '../application/GetOrdenesByRepartidorIdUseCase';
 import { CambiarEstadoOrdenRepartidorUseCase } from '../application/CambiarEstadoOrdenRepartidorUseCase';
+import { GetOrdenesByEmpresaIdUseCase } from '../application/GetOrdenesByEmpresaIdUseCase';
 import { CreateOrdenController } from './controllers/CreateOrdenController';
 import { GetAllOrdenesController } from './controllers/GetAllOrdenesController';
 import { GetOrdenByIdController } from './controllers/GetOrdenByIdController';
@@ -19,6 +20,7 @@ import { AsignarRepartidorController } from './controllers/AsignarRepartidorCont
 import { GetOrdenesListasParaRecoleccionController } from './controllers/GetOrdenesListasParaRecoleccionController';
 import { GetOrdenesByRepartidorIdController } from './controllers/GetOrdenesByRepartidorIdController';
 import { CambiarEstadoOrdenRepartidorController } from './controllers/CambiarEstadoOrdenRepartidorController';
+import { GetOrdenesByEmpresaIdController } from './controllers/GetOrdenesByEmpresaIdController';
 
 const ordenRepository = new MySQLOrdenRepository();
 
@@ -32,6 +34,7 @@ const asignarRepartidorUseCase = new AsignarRepartidorUseCase(ordenRepository);
 const getOrdenesListasParaRecoleccionUseCase = new GetOrdenesListasParaRecoleccionUseCase(ordenRepository);
 const getOrdenesByRepartidorIdUseCase = new GetOrdenesByRepartidorIdUseCase(ordenRepository);
 const cambiarEstadoOrdenRepartidorUseCase = new CambiarEstadoOrdenRepartidorUseCase(ordenRepository);
+const getOrdenesByEmpresaIdUseCase = new GetOrdenesByEmpresaIdUseCase(ordenRepository);
 
 export const createOrdenController = new CreateOrdenController(createOrdenUseCase);
 export const getAllOrdenesController = new GetAllOrdenesController(getAllOrdenesUseCase);
@@ -43,3 +46,4 @@ export const asignarRepartidorController = new AsignarRepartidorController(asign
 export const getOrdenesListasParaRecoleccionController = new GetOrdenesListasParaRecoleccionController(getOrdenesListasParaRecoleccionUseCase);
 export const getOrdenesByRepartidorIdController = new GetOrdenesByRepartidorIdController(getOrdenesByRepartidorIdUseCase);
 export const cambiarEstadoOrdenRepartidorController = new CambiarEstadoOrdenRepartidorController(cambiarEstadoOrdenRepartidorUseCase);
+export const getOrdenesByEmpresaIdController = new GetOrdenesByEmpresaIdController(getOrdenesByEmpresaIdUseCase);

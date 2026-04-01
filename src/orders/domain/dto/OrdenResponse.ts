@@ -3,7 +3,10 @@ import { Orden } from '../entities/Orden';
 export class OrdenResponse {
   id_orden: number;
   id_usuario: number;
+  nombre_cliente?: string;
   id_repartidor?: number | null;
+  id_empresa?: number | null;
+  nombre_empresa?: string | null;
   fecha_orden: Date;
   estado_orden: string;
   monto_total: number;
@@ -18,7 +21,10 @@ export class OrdenResponse {
   constructor(orden: Orden) {
     this.id_orden = orden.id_orden;
     this.id_usuario = orden.id_usuario;
+    this.nombre_cliente = orden.nombre_cliente;
     this.id_repartidor = orden.id_repartidor;
+    this.id_empresa = orden.id_empresa;
+    this.nombre_empresa = orden.nombre_empresa;
     this.fecha_orden = orden.fecha_orden;
     this.estado_orden = orden.estado_orden;
     this.monto_total = orden.monto_total;

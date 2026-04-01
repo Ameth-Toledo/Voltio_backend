@@ -9,4 +9,5 @@ export interface IProductRepository {
   deleteProduct(id: number): Promise<boolean>;
   getProductBySku(sku: string): Promise<Product | null>;
   getProductsByCategory(id_categoria: number): Promise<Product[]>;
+  getProductsByEmpresa(id_empresa: number): Promise<Product[]>;
 }

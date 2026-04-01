@@ -7,8 +7,8 @@ import { RowDataPacket, ResultSetHeader } from 'mysql2';
 export class MySQLProductRepository implements IProductRepository {
   async createProduct(data: ProductRequest): Promise<Product> {
     const query = `
-      INSERT INTO productos (sku, nombre, descripcion, precio_venta, stock_actual, imagen_url, id_categoria)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO productos (sku, nombre, descripcion, precio_venta, stock_actual, imagen_url, id_categoria, id_empresa)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const [result] = await pool.execute<ResultSetHeader>(query, [
@@ -19,6 +19,7 @@ export class MySQLProductRepository implements IProductRepository {
       data.stock_actual || 0,
       data.imagen_url || null,
       data.id_categoria || null,
+      data.id_empresa || null,
     ]);
 
     if (data.especificaciones && data.especificaciones.length > 0) {
@@ -79,6 +80,7 @@ export class MySQLProductRepository implements IProductRepository {
       stock_actual: row.stock_actual,
       imagen_url: row.imagen_url,
       id_categoria: row.id_categoria,
+      id_empresa: row.id_empresa,
       fecha_registro: new Date(row.fecha_registro),
       especificaciones,
     };
@@ -111,6 +113,10 @@ export class MySQLProductRepository implements IProductRepository {
     if (data.id_categoria !== undefined) {
       fields.push('id_categoria = ?');
       values.push(data.id_categoria);
+    }
+    if (data.id_empresa !== undefined) {
+      fields.push('id_empresa = ?');
+      values.push(data.id_empresa);
     }
 
     if (fields.length === 0) return this.getProductById(id);
@@ -157,6 +163,20 @@ export class MySQLProductRepository implements IProductRepository {
     const [rows] = await pool.execute<RowDataPacket[]>(
       'SELECT id_producto FROM productos WHERE id_categoria = ? ORDER BY fecha_registro DESC',
       [id_categoria]
+    );
+
+    const products: Product[] = [];
+    for (const row of rows) {
+      const product = await this.getProductById(row.id_producto);
+      if (product) products.push(product);
+    }
+    return products;
+  }
+
+  async getProductsByEmpresa(id_empresa: number): Promise<Product[]> {
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      'SELECT id_producto FROM productos WHERE id_empresa = ? ORDER BY fecha_registro DESC',
+      [id_empresa]
     );
 
     const products: Product[] = [];

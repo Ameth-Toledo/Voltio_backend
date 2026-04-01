@@ -1,6 +1,7 @@
 // En domain/dto/OrdenRequest.ts
 export interface OrdenRequest {
   id_usuario: number;
+  id_empresa?: number;
   estado_orden: string;
   monto_total: number;
   descripcion?: string;

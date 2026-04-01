@@ -6,6 +6,7 @@ export interface ProductRequest {
   stock_actual?: number;
   imagen_url?: string;
   id_categoria?: number;
+  id_empresa?: number;
   especificaciones?: Array<{
     clave: string;
     valor: string;
@@ -19,6 +20,7 @@ export interface ProductUpdateRequest {
   stock_actual?: number;
   imagen_url?: string;
   id_categoria?: number;
+  id_empresa?: number;
   especificaciones?: Array<{
     clave: string;
     valor: string;

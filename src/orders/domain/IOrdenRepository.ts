@@ -11,4 +11,5 @@ export interface IOrdenRepository {
   asignarRepartidor(id_orden: number, id_repartidor: number): Promise<Orden | null>;
   getOrdenesListasParaRecoleccion(): Promise<Orden[]>;
   getOrdenesByRepartidorId(id_repartidor: number): Promise<Orden[]>;
+  getOrdenesByEmpresaId(id_empresa: number): Promise<Orden[]>;
 }

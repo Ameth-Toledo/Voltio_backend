@@ -5,12 +5,14 @@ import { GetProductByIdUseCase } from '../application/GetProductByIdUseCase';
 import { UpdateProductUseCase } from '../application/UpdateProductUseCase';
 import { DeleteProductUseCase } from '../application/DeleteProductUseCase';
 import { GetProductsByCategoryUseCase } from '../application/GetProductsByCategoryUseCase';
+import { GetProductsByEmpresaUseCase } from '../application/GetProductsByEmpresaUseCase';
 import { CreateProductController } from './controllers/CreateProductController';
 import { GetAllProductsController } from './controllers/GetAllProductsController';
 import { GetProductByIdController } from './controllers/GetProductByIdController';
 import { UpdateProductController } from './controllers/UpdateProductController';
 import { DeleteProductController } from './controllers/DeleteProductController';
 import { GetProductsByCategoryController } from './controllers/GetProductsByCategoryController';
+import { GetProductsByEmpresaController } from './controllers/GetProductsByEmpresaController';
 
 const productRepository = new MySQLProductRepository();
 
@@ -20,6 +22,7 @@ const getProductByIdUseCase = new GetProductByIdUseCase(productRepository);
 const updateProductUseCase = new UpdateProductUseCase(productRepository);
 const deleteProductUseCase = new DeleteProductUseCase(productRepository);
 const getProductsByCategoryUseCase = new GetProductsByCategoryUseCase(productRepository);
+const getProductsByEmpresaUseCase = new GetProductsByEmpresaUseCase(productRepository);
 
 export const createProductController = new CreateProductController(createProductUseCase);
 export const getAllProductsController = new GetAllProductsController(getAllProductsUseCase);
@@ -27,3 +30,4 @@ export const getProductByIdController = new GetProductByIdController(getProductB
 export const updateProductController = new UpdateProductController(updateProductUseCase);
 export const deleteProductController = new DeleteProductController(deleteProductUseCase);
 export const getProductsByCategoryController = new GetProductsByCategoryController(getProductsByCategoryUseCase);
+export const getProductsByEmpresaController = new GetProductsByEmpresaController(getProductsByEmpresaUseCase);

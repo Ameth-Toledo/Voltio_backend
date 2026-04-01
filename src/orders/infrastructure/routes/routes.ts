@@ -9,6 +9,7 @@ import { AsignarRepartidorController } from '../controllers/AsignarRepartidorCon
 import { GetOrdenesListasParaRecoleccionController } from '../controllers/GetOrdenesListasParaRecoleccionController';
 import { GetOrdenesByRepartidorIdController } from '../controllers/GetOrdenesByRepartidorIdController';
 import { CambiarEstadoOrdenRepartidorController } from '../controllers/CambiarEstadoOrdenRepartidorController';
+import { GetOrdenesByEmpresaIdController } from '../controllers/GetOrdenesByEmpresaIdController';
 import { jwtMiddleware } from '../../../core/security/jwt_middleware';
 
 export function configureOrdenesRoutes(
@@ -21,13 +22,15 @@ export function configureOrdenesRoutes(
   asignarRepartidorCtrl: AsignarRepartidorController,
   getOrdenesListasCtrl: GetOrdenesListasParaRecoleccionController,
   getOrdenesByRepartidorIdCtrl: GetOrdenesByRepartidorIdController,
-  cambiarEstadoRepartidorCtrl: CambiarEstadoOrdenRepartidorController
+  cambiarEstadoRepartidorCtrl: CambiarEstadoOrdenRepartidorController,
+  getOrdenesByEmpresaIdCtrl: GetOrdenesByEmpresaIdController
 ): Router {
   const router = Router();
 
   router.get('/ordenes', jwtMiddleware, (req: Request, res: Response) => getAllOrdenesCtrl.handle(req, res));
   router.get('/ordenes/:id', jwtMiddleware, (req: Request, res: Response) => getOrdenByIdCtrl.handle(req, res));
   router.get('/usuarios/:id_usuario/ordenes', jwtMiddleware, (req: Request, res: Response) => getOrdenesByUsuarioIdCtrl.handle(req, res));
+  router.get('/empresas/:id_empresa/ordenes', jwtMiddleware, (req: Request, res: Response) => getOrdenesByEmpresaIdCtrl.handle(req, res));
 
   router.post('/ordenes', jwtMiddleware, (req: Request, res: Response) => createOrdenCtrl.handle(req, res));
   router.put('/ordenes/:id', jwtMiddleware, (req: Request, res: Response) => updateOrdenCtrl.handle(req, res));
