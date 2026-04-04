@@ -35,7 +35,9 @@ const PORT = process.env.PORT || 3000;
 
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.FRONTEND_URL || '*',
+    origin: (origin, callback) => {
+      callback(null, origin || true);
+    },
     credentials: true,
   },
 });
@@ -43,8 +45,12 @@ const io = new Server(httpServer, {
 InitCloudinary();
 
 app.use(cors({
-  origin: '*',
+  origin: (origin, callback) => {
+    callback(null, origin || true);
+  },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 app.use(express.json());
