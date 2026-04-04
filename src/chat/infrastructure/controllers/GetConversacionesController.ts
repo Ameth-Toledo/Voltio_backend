@@ -6,7 +6,7 @@ export class GetConversacionesController {
 
   async handleByUsuario(req: Request, res: Response): Promise<void> {
     try {
-      const id_usuario = parseInt(req.params.id_usuario);
+      const id_usuario = parseInt(req.params.id_usuario as string);
       const result = await this.getConversacionesUseCase.executeByUsuario(id_usuario);
       res.status(200).json(result);
     } catch (error: any) {
@@ -16,7 +16,7 @@ export class GetConversacionesController {
 
   async handleByEmpresa(req: Request, res: Response): Promise<void> {
     try {
-      const id_empresa = parseInt(req.params.id_empresa);
+      const id_empresa = parseInt(req.params.id_empresa as string);
       const result = await this.getConversacionesUseCase.executeByEmpresa(id_empresa);
       res.status(200).json(result);
     } catch (error: any) {
@@ -26,7 +26,7 @@ export class GetConversacionesController {
 
   async handleByRepartidor(req: Request, res: Response): Promise<void> {
     try {
-      const id_repartidor = parseInt(req.params.id_repartidor);
+      const id_repartidor = parseInt(req.params.id_repartidor as string);
       const result = await this.getConversacionesUseCase.executeByRepartidor(id_repartidor);
       res.status(200).json(result);
     } catch (error: any) {

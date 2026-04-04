@@ -6,7 +6,7 @@ export class GetMensajesController {
 
   async handle(req: Request, res: Response): Promise<void> {
     try {
-      const id_conversacion = parseInt(req.params.id_conversacion);
+      const id_conversacion = parseInt(req.params.id_conversacion as string);
       const result = await this.getMensajesUseCase.execute(id_conversacion);
       res.status(200).json(result);
     } catch (error: any) {

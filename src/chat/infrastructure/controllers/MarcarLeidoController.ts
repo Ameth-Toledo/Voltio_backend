@@ -6,7 +6,7 @@ export class MarcarLeidoController {
 
   async handle(req: Request, res: Response): Promise<void> {
     try {
-      const id_conversacion = parseInt(req.params.id_conversacion);
+      const id_conversacion = parseInt(req.params.id_conversacion as string);
       const { id_usuario } = req.body;
       await this.marcarLeidoUseCase.execute(id_conversacion, id_usuario);
       res.status(200).json({ message: 'Mensajes marcados como leídos' });
