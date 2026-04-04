@@ -3,13 +3,16 @@ import { CrearConversacionController } from '../controllers/CrearConversacionCon
 import { GetConversacionesController } from '../controllers/GetConversacionesController';
 import { GetMensajesController } from '../controllers/GetMensajesController';
 import { MarcarLeidoController } from '../controllers/MarcarLeidoController';
+import { SubirArchivoController } from '../controllers/SubirArchivoController';
 import { jwtMiddleware } from '../../../core/security/jwt_middleware';
+import { uploadChat } from '../../../core/config/multer_chat_config';
 
 export function configureChatRoutes(
   crearConversacionCtrl: CrearConversacionController,
   getConversacionesCtrl: GetConversacionesController,
   getMensajesCtrl: GetMensajesController,
-  marcarLeidoCtrl: MarcarLeidoController
+  marcarLeidoCtrl: MarcarLeidoController,
+  subirArchivoCtrl: SubirArchivoController
 ): Router {
   const router = Router();
 
@@ -32,6 +35,10 @@ export function configureChatRoutes(
   // Marcar mensajes como leídos
   router.patch('/conversaciones/:id_conversacion/leido', jwtMiddleware, (req: Request, res: Response) =>
     marcarLeidoCtrl.handle(req, res));
+
+  // Subir archivo/imagen/video a una conversación
+  router.post('/conversaciones/:id_conversacion/archivo', jwtMiddleware, uploadChat.single('archivo'), (req: Request, res: Response) =>
+    subirArchivoCtrl.handle(req, res));
 
   return router;
 }

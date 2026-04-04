@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Chat - Usuario</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+    body { background: #f5f5f5; display: flex; flex-direction: column; height: 100vh; }
+
+    #login-panel {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; height: 100vh; gap: 12px;
+    }
+    #login-panel h2 { font-size: 1.2rem; margin-bottom: 8px; }
+    #login-panel input {
+      width: 320px; padding: 10px 14px; border: 1px solid #ddd;
+      border-radius: 10px; font-size: 14px; outline: none;
+    }
+    #login-panel button {
+      width: 320px; padding: 10px; background: #000; color: #fff;
+      border: none; border-radius: 10px; cursor: pointer; font-size: 14px;
+    }
+    #login-panel button:hover { background: #333; }
+    #login-panel .error { color: red; font-size: 13px; }
+
+    /* CHAT */
+    #chat-panel { display: none; flex: 1; flex-direction: column; height: 100vh; }
+
+    #header {
+      background: #000; color: #fff; padding: 14px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    #header span { font-size: 13px; opacity: 0.7; }
+    #header button {
+      background: transparent; border: 1px solid #fff; color: #fff;
+      padding: 4px 12px; border-radius: 8px; cursor: pointer; font-size: 12px;
+    }
+
+    #main { display: flex; flex: 1; overflow: hidden; }
+
+    /* Conversaciones */
+    #conv-list {
+      width: 280px; border-right: 1px solid #e5e5e5;
+      background: #fff; display: flex; flex-direction: column;
+      flex-shrink: 0;
+    }
+    #conv-list h3 {
+      padding: 16px; font-size: 14px; border-bottom: 1px solid #f0f0f0;
+      font-weight: 600;
+    }
+    #conv-list .nueva-btn {
+      margin: 12px; padding: 10px; background: #000; color: #fff;
+      border: none; border-radius: 10px; cursor: pointer; font-size: 13px;
+    }
+    #conv-list .nueva-btn:hover { background: #333; }
+    #conversaciones { flex: 1; overflow-y: auto; }
+    .conv-item {
+      padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f5f5f5;
+      transition: background 0.15s;
+    }
+    .conv-item:hover { background: #f5f5f5; }
+    .conv-item.active { background: #e8edff; }
+    .conv-item .nombre { font-size: 13px; font-weight: 600; }
+    .conv-item .ultimo { font-size: 12px; color: #888; margin-top: 2px; }
+
+    /* Mensajes */
+    #msg-panel {
+      flex: 1; display: flex; flex-direction: column; background: #fff;
+    }
+    #msg-header {
+      padding: 14px 20px; border-bottom: 1px solid #f0f0f0;
+      font-size: 14px; font-weight: 600; color: #333;
+    }
+    #mensajes {
+      flex: 1; overflow-y: auto; padding: 16px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .msg { display: flex; }
+    .msg.mio { justify-content: flex-end; }
+    .burbuja {
+      max-width: 60%; padding: 10px 14px; border-radius: 18px;
+      font-size: 13px; line-height: 1.4;
+    }
+    .msg.mio .burbuja { background: #000; color: #fff; border-bottom-right-radius: 4px; }
+    .msg.otro .burbuja { background: #f0f0f0; color: #111; border-bottom-left-radius: 4px; }
+    .hora { font-size: 10px; color: #aaa; margin-top: 4px; text-align: right; }
+    .msg.otro .hora { text-align: left; }
+    #typing { padding: 4px 20px; font-size: 12px; color: #888; font-style: italic; min-height: 20px; }
+
+    #input-area {
+      padding: 14px 20px; border-top: 1px solid #f0f0f0;
+      display: flex; gap: 10px; align-items: center;
+    }
+    #input-area input[type="text"] {
+      flex: 1; padding: 10px 14px; border: 1px solid #ddd;
+      border-radius: 12px; font-size: 14px; outline: none;
+    }
+    #input-area input[type="text"]:focus { border-color: #999; }
+    #input-area button {
+      padding: 10px 18px; background: #000; color: #fff;
+      border: none; border-radius: 12px; cursor: pointer; font-size: 13px;
+    }
+    #input-area button:disabled { opacity: 0.4; cursor: not-allowed; }
+    #attach-btn {
+      width: 42px; height: 42px; border-radius: 12px; background: #f0f0f0;
+      border: none; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0; transition: background 0.15s;
+    }
+    #attach-btn:hover { background: #e0e0e0; }
+    #attach-btn svg { width: 18px; height: 18px; stroke: #555; }
+
+    /* Mensajes multimedia */
+    .burbuja img { max-width: 220px; max-height: 200px; border-radius: 12px;
+      display: block; cursor: pointer; object-fit: cover; }
+    .burbuja video { max-width: 220px; border-radius: 12px; display: block; }
+    .burbuja .archivo-link {
+      display: flex; align-items: center; gap: 8px;
+      text-decoration: underline; font-size: 13px; cursor: pointer;
+    }
+    .burbuja .archivo-link svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .subiendo { font-size: 11px; opacity: 0.6; font-style: italic; }
+
+    /* Nueva conversacion modal */
+    #modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4); align-items: center; justify-content: center;
+    }
+    #modal.show { display: flex; }
+    #modal-box {
+      background: #fff; border-radius: 16px; padding: 24px;
+      width: 340px; display: flex; flex-direction: column; gap: 12px;
+    }
+    #modal-box h3 { font-size: 15px; }
+    #modal-box input {
+      padding: 10px 14px; border: 1px solid #ddd;
+      border-radius: 10px; font-size: 14px; outline: none;
+    }
+    #modal-box .btns { display: flex; gap: 8px; }
+    #modal-box .btns button {
+      flex: 1; padding: 10px; border-radius: 10px;
+      border: none; cursor: pointer; font-size: 13px;
+    }
+    #modal-box .btns .ok { background: #000; color: #fff; }
+    #modal-box .btns .cancel { background: #f0f0f0; }
+
+    .placeholder {
+      flex: 1; display: flex; align-items: center;
+      justify-content: center; color: #bbb; font-size: 14px;
+    }
+
+    /* Modal preview archivo */
+    #preview-modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7); align-items: center; justify-content: center;
+      z-index: 100;
+    }
+    #preview-modal.show { display: flex; }
+    #preview-box {
+      background: #fff; border-radius: 20px; padding: 20px;
+      width: 360px; display: flex; flex-direction: column; gap: 14px;
+    }
+    #preview-box h3 { font-size: 14px; font-weight: 600; color: #111; }
+    #preview-media { width: 100%; border-radius: 12px; overflow: hidden;
+      background: #f5f5f5; display: flex; align-items: center; justify-content: center;
+      min-height: 180px; max-height: 260px; }
+    #preview-media img { width: 100%; max-height: 260px; object-fit: contain; }
+    #preview-media video { width: 100%; max-height: 260px; }
+    #preview-media .file-icon {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 32px; color: #666;
+    }
+    #preview-media .file-icon svg { width: 40px; height: 40px; stroke: #888; }
+    #preview-media .file-icon span { font-size: 13px; color: #555; word-break: break-all; text-align: center; }
+    #caption-input {
+      width: 100%; padding: 10px 14px; border: 1px solid #ddd;
+      border-radius: 12px; font-size: 14px; outline: none; resize: none;
+      font-family: inherit;
+    }
+    #caption-input:focus { border-color: #999; }
+    #preview-box .btns { display: flex; gap: 8px; }
+    #preview-box .btns button {
+      flex: 1; padding: 10px; border-radius: 12px;
+      border: none; cursor: pointer; font-size: 13px; font-weight: 500;
+    }
+    #preview-box .btns .send-file { background: #000; color: #fff; }
+    #preview-box .btns .send-file:disabled { opacity: 0.5; cursor: not-allowed; }
+    #preview-box .btns .cancel-file { background: #f0f0f0; color: #333; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-panel">
+  <h2>🧪 Test Chat — Usuario</h2>
+  <input id="email" type="email" placeholder="Email" value="ameth@test.com"/>
+  <input id="password" type="password" placeholder="Contraseña"/>
+  <button onclick="login()">Entrar</button>
+  <span class="error" id="login-error"></span>
+</div>
+
+<!-- CHAT -->
+<div id="chat-panel">
+  <div id="header">
+    <strong id="header-nombre">Chat Usuario</strong>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <span id="header-info"></span>
+      <button onclick="logout()">Salir</button>
+    </div>
+  </div>
+  <div id="main">
+    <!-- Lista conversaciones -->
+    <div id="conv-list">
+      <h3>Mis conversaciones</h3>
+      <button class="nueva-btn" onclick="abrirModal()">+ Nueva conversación</button>
+      <div id="conversaciones"></div>
+    </div>
+
+    <!-- Panel mensajes -->
+    <div id="msg-panel">
+      <div id="msg-header">Selecciona una conversación</div>
+      <div id="mensajes"><div class="placeholder">Selecciona una conversación</div></div>
+      <div id="typing"></div>
+      <div id="input-area">
+        <!-- Botón adjuntar -->
+        <label id="attach-btn" title="Adjuntar archivo">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+          </svg>
+          <input id="file-input" type="file" style="display:none"
+            accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx"
+            onchange="subirArchivo(event)"/>
+        </label>
+
+        <input id="msg-input" type="text" placeholder="Escribe un mensaje..." disabled
+          onkeydown="if(event.key==='Enter') enviar()"
+          oninput="escribiendo()"/>
+        <button id="send-btn" onclick="enviar()" disabled>Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal preview archivo -->
+<div id="preview-modal">
+  <div id="preview-box">
+    <h3>📎 Vista previa</h3>
+    <div id="preview-media"></div>
+    <textarea id="caption-input" rows="2" placeholder="Añadir comentario... (opcional)"></textarea>
+    <div class="btns">
+      <button class="cancel-file" onclick="cerrarPreview()">Cancelar</button>
+      <button class="send-file" id="send-file-btn" onclick="enviarArchivo()">Enviar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal nueva conversación -->
+<div id="modal">
+  <div id="modal-box">
+    <h3>Nueva conversación</h3>
+    <input id="modal-empresa-id" type="number" placeholder="ID de la empresa"/>
+    <div class="btns">
+      <button class="cancel" onclick="cerrarModal()">Cancelar</button>
+      <button class="ok" onclick="crearConversacion()">Crear</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:3000/api';
+  const SOCKET_URL = 'http://localhost:3000';
+
+  let token = null;
+  let usuario = null;
+  let socket = null;
+  let convActiva = null;
+  let typingTimeout = null;
+
+  // ─── AUTH ────────────────────────────────────────────────
+  async function login() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    document.getElementById('login-error').textContent = '';
+
+    try {
+      const res = await fetch(`${API}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password })
+      });
+
+      if (!res.ok) throw new Error('Credenciales incorrectas');
+      const data = await res.json();
+
+      token = data.accessToken;
+      usuario = data.user;
+
+      document.getElementById('header-nombre').textContent =
+        `${usuario.name} ${usuario.lastname}`;
+      document.getElementById('header-info').textContent =
+        `ID: ${usuario.id} | ${usuario.role}`;
+
+      document.getElementById('login-panel').style.display = 'none';
+      document.getElementById('chat-panel').style.display = 'flex';
+
+      // Auto-refresh cada 14 minutos (antes de que expire en 15)
+      iniciarAutoRefresh();
+      conectarSocket();
+      cargarConversaciones();
+    } catch (e) {
+      document.getElementById('login-error').textContent = e.message;
+    }
+  }
+
+  // Refresca el token silenciosamente
+  async function refreshToken() {
+    try {
+      const res = await fetch(`${API}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include' // manda la cookie refresh_token
+      });
+      if (!res.ok) throw new Error('Refresh falló');
+      const data = await res.json();
+      token = data.accessToken;
+      console.log('🔄 Token renovado automáticamente');
+
+      // Reconectar socket con nuevo token
+      if (socket) {
+        socket.auth = { token };
+        socket.disconnect().connect();
+      }
+    } catch (e) {
+      console.error('❌ No se pudo renovar el token, cerrando sesión');
+      logout();
+    }
+  }
+
+  let refreshInterval = null;
+
+  function iniciarAutoRefresh() {
+    clearInterval(refreshInterval);
+    // Cada 14 minutos renueva el token (expira en 15)
+    refreshInterval = setInterval(refreshToken, 14 * 60 * 1000);
+  }
+
+  // Fetch con auto-refresh si da 401
+  async function apiFetch(url, options = {}) {
+    options.headers = { ...options.headers, Authorization: `Bearer ${token}` };
+    let res = await fetch(url, options);
+
+    if (res.status === 401) {
+      await refreshToken();
+      options.headers.Authorization = `Bearer ${token}`;
+      res = await fetch(url, options); // reintentar con nuevo token
+    }
+    return res;
+  }
+
+  function logout() {
+    token = null;
+    usuario = null;
+    clearInterval(refreshInterval);
+    socket?.disconnect();
+    document.getElementById('chat-panel').style.display = 'none';
+    document.getElementById('login-panel').style.display = 'flex';
+  }
+
+  // ─── SOCKET ──────────────────────────────────────────────
+  function conectarSocket() {
+    socket = io(SOCKET_URL, { auth: { token } });
+
+    socket.on('connect', () => {
+      console.log('✅ Socket conectado');
+      // Re-unirse a la sala si había una conversación activa
+      if (convActiva) {
+        socket.emit('join_conversation', convActiva.id_conversacion);
+        console.log('🔄 Re-unido a conversación:', convActiva.id_conversacion);
+      }
+    });
+
+    socket.on('disconnect', () => console.log('❌ Socket desconectado'));
+
+    socket.on('new_message', (msg) => {
+      console.log('📩 Mensaje recibido:', msg);
+      if (convActiva && msg.id_conversacion === convActiva.id_conversacion) {
+        agregarMensaje(msg);
+        socket.emit('mark_read', {
+          id_conversacion: convActiva.id_conversacion,
+          id_usuario: usuario.id
+        });
+      }
+      cargarConversaciones();
+    });
+
+    socket.on('user_typing', ({ nombre }) => {
+      document.getElementById('typing').textContent = `${nombre} está escribiendo...`;
+    });
+
+    socket.on('user_stop_typing', () => {
+      document.getElementById('typing').textContent = '';
+    });
+  }
+
+  // ─── CONVERSACIONES ───────────────────────────────────────
+  async function cargarConversaciones() {
+    try {
+      const res = await apiFetch(`${API}/usuarios/${usuario.id}/conversaciones`);
+      const data = await res.json();
+      renderConversaciones(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error('Error cargando conversaciones:', e);
+    }
+  }
+
+  let conversacionesCache = [];
+
+  function renderConversaciones(lista) {
+    conversacionesCache = lista;
+    const container = document.getElementById('conversaciones');
+    if (lista.length === 0) {
+      container.innerHTML = '<p style="padding:16px;color:#aaa;font-size:13px;">Sin conversaciones</p>';
+      return;
+    }
+    container.innerHTML = lista.map((c, i) => `
+      <div class="conv-item ${convActiva?.id_conversacion === c.id_conversacion ? 'active' : ''}"
+           onclick="seleccionarConversacion(${i})">
+        <div class="nombre">${c.nombre_empresa || c.nombre_repartidor || 'Empresa'}</div>
+        <div class="ultimo">${c.ultimo_mensaje || 'Sin mensajes'}</div>
+      </div>
+    `).join('');
+  }
+
+  function seleccionarConversacion(index) {
+    const conv = conversacionesCache[index];
+    convActiva = conv;
+
+    document.getElementById('msg-header').textContent =
+      conv.nombre_empresa || conv.nombre_repartidor || 'Chat';
+
+    document.getElementById('msg-input').disabled = false;
+    document.getElementById('send-btn').disabled = false;
+
+    socket.emit('join_conversation', conv.id_conversacion);
+    cargarMensajes(conv.id_conversacion);
+    cargarConversaciones();
+  }
+
+  // ─── MENSAJES ─────────────────────────────────────────────
+  async function cargarMensajes(idConversacion) {
+    document.getElementById('mensajes').innerHTML = '<div class="placeholder">Cargando...</div>';
+    try {
+      const res = await apiFetch(`${API}/conversaciones/${idConversacion}/mensajes`);
+      const mensajes = await res.json();
+      document.getElementById('mensajes').innerHTML = '';
+      (Array.isArray(mensajes) ? mensajes : []).forEach(agregarMensaje);
+      scrollAbajo();
+
+      socket.emit('mark_read', {
+        id_conversacion: idConversacion,
+        id_usuario: usuario.id
+      });
+    } catch (e) {
+      console.error('Error cargando mensajes:', e);
+    }
+  }
+
+  function agregarMensaje(msg) {
+    const esMio = msg.id_remitente === usuario.id;
+    const hora = new Date(msg.created_at).toLocaleTimeString('es-MX', {
+      hour: '2-digit', minute: '2-digit'
+    });
+
+    let contenidoHtml = '';
+    const tipo = msg.tipo_mensaje || 'texto';
+
+    const caption = msg.contenido ? `<p style="margin-top:6px;font-size:12px;opacity:0.9;">${msg.contenido}</p>` : '';
+
+    if (tipo === 'imagen') {
+      contenidoHtml = `<img src="${msg.archivo_url}" onclick="window.open('${msg.archivo_url}','_blank')" title="Ver imagen" style="margin:0;padding:0;"/>${caption}`;
+    } else if (tipo === 'video') {
+      contenidoHtml = `<video src="${msg.archivo_url}" controls style="margin:0;padding:0;"></video>${caption}`;
+    } else if (tipo === 'archivo') {
+      contenidoHtml = `
+        <a href="${msg.archivo_url}" target="_blank" class="archivo-link">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+          </svg>
+          Descargar archivo
+        </a>${caption}`;
+    } else {
+      contenidoHtml = msg.contenido || '';
+    }
+
+    const div = document.createElement('div');
+    div.className = `msg ${esMio ? 'mio' : 'otro'}`;
+    div.innerHTML = `
+      <div>
+        <div class="burbuja">${contenidoHtml}</div>
+        <div class="hora">${hora}</div>
+      </div>`;
+    document.getElementById('mensajes').appendChild(div);
+    scrollAbajo();
+  }
+
+  function scrollAbajo() {
+    const el = document.getElementById('mensajes');
+    el.scrollTop = el.scrollHeight;
+  }
+
+  // ─── ENVIAR ───────────────────────────────────────────────
+  function enviar() {
+    const input = document.getElementById('msg-input');
+    const texto = input.value.trim();
+    if (!texto || !convActiva) return;
+
+    socket.emit('send_message', {
+      id_conversacion: convActiva.id_conversacion,
+      id_remitente: usuario.id,
+      contenido: texto
+    });
+
+    input.value = '';
+    socket.emit('stop_typing', {
+      id_conversacion: convActiva.id_conversacion,
+      id_usuario: usuario.id
+    });
+  }
+
+  function escribiendo() {
+    if (!convActiva) return;
+    socket.emit('typing', {
+      id_conversacion: convActiva.id_conversacion,
+      id_usuario: usuario.id,
+      nombre: usuario.name
+    });
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+      socket.emit('stop_typing', {
+        id_conversacion: convActiva.id_conversacion,
+        id_usuario: usuario.id
+      });
+    }, 1000);
+  }
+
+  // ─── SUBIR ARCHIVO ───────────────────────────────────────
+  let archivoSeleccionado = null;
+
+  function subirArchivo(event) {
+    const file = event.target.files[0];
+    if (!file || !convActiva) return;
+    event.target.value = '';
+    archivoSeleccionado = file;
+    abrirPreview(file);
+  }
+
+  function abrirPreview(file) {
+    const mediaEl = document.getElementById('preview-media');
+    document.getElementById('caption-input').value = '';
+    mediaEl.innerHTML = '';
+
+    if (file.type.startsWith('image/')) {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      mediaEl.appendChild(img);
+    } else if (file.type.startsWith('video/')) {
+      const video = document.createElement('video');
+      video.src = URL.createObjectURL(file);
+      video.controls = true;
+      mediaEl.appendChild(video);
+    } else {
+      mediaEl.innerHTML = `
+        <div class="file-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <span>${file.name}</span>
+        </div>`;
+    }
+
+    document.getElementById('preview-modal').classList.add('show');
+    setTimeout(() => document.getElementById('caption-input').focus(), 100);
+  }
+
+  function cerrarPreview() {
+    document.getElementById('preview-modal').classList.remove('show');
+    archivoSeleccionado = null;
+  }
+
+  async function enviarArchivo() {
+    if (!archivoSeleccionado || !convActiva) return;
+
+    const btn = document.getElementById('send-file-btn');
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+
+    const caption = document.getElementById('caption-input').value.trim();
+    const formData = new FormData();
+    formData.append('archivo', archivoSeleccionado);
+    formData.append('id_remitente', usuario.id.toString());
+    if (caption) formData.append('caption', caption);
+
+    try {
+      const res = await apiFetch(
+        `${API}/conversaciones/${convActiva.id_conversacion}/archivo`,
+        { method: 'POST', body: formData }
+      );
+      if (!res.ok) throw new Error('Error al subir archivo');
+      cerrarPreview();
+    } catch (e) {
+      alert('Error: ' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Enviar';
+    }
+  }
+
+  // ─── NUEVA CONVERSACIÓN ───────────────────────────────────
+  function abrirModal() {
+    document.getElementById('modal').classList.add('show');
+  }
+
+  function cerrarModal() {
+    document.getElementById('modal').classList.remove('show');
+    document.getElementById('modal-empresa-id').value = '';
+  }
+
+  async function crearConversacion() {
+    const idEmpresa = parseInt(document.getElementById('modal-empresa-id').value);
+    if (!idEmpresa) return alert('Ingresa el ID de la empresa');
+
+    try {
+      const res = await apiFetch(`${API}/conversaciones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id_usuario: usuario.id,
+          id_empresa: idEmpresa,
+          tipo: 'usuario_empresa'
+        })
+      });
+
+      if (!res.ok) throw new Error('Error al crear conversación');
+      cerrarModal();
+      cargarConversaciones();
+    } catch (e) {
+      alert(e.message);
+    }
+  }
+</script>
+</body>
+</html>

@@ -12,11 +12,20 @@ export class EnviarMensajeUseCase {
     if (!data.id_remitente || data.id_remitente <= 0) {
       throw new Error('El ID del remitente es obligatorio');
     }
-    if (!data.contenido?.trim()) {
+
+    const tipo = data.tipo_mensaje || 'texto';
+
+    if (tipo === 'texto' && !data.contenido?.trim()) {
       throw new Error('El contenido del mensaje no puede estar vacío');
     }
+    if (tipo !== 'texto' && !data.archivo_url) {
+      throw new Error('La URL del archivo es obligatoria para mensajes multimedia');
+    }
 
-    const mensaje = await this.chatRepository.enviarMensaje(data);
+    const mensaje = await this.chatRepository.enviarMensaje({
+      ...data,
+      tipo_mensaje: tipo,
+    });
     return new MensajeResponse(mensaje);
   }
 }

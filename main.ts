@@ -24,7 +24,7 @@ import { configureDirectionRoutes } from './src/directions/infrastructure/routes
 import { createDirectionController, getAllDirectionController, getDirectionByIdController, getDirectionsByUserIdController, updateDirectionController, deleteDirectionController } from './src/directions/infrastructure/dependencies'
 import { configurePayPalRoutes } from './src/paypal/infrastructure/routes/routes';
 import { createPayPalOrderController, capturePayPalOrderController } from './src/paypal/infrastructure/dependencies';
-import { crearConversacionController, getConversacionesController, getMensajesController, marcarLeidoController, enviarMensajeUseCase, marcarLeidoUseCaseSocket } from './src/chat/infrastructure/dependencies';
+import { crearConversacionController, getConversacionesController, getMensajesController, marcarLeidoController, enviarMensajeUseCase, marcarLeidoUseCaseSocket, createSubirArchivoController } from './src/chat/infrastructure/dependencies';
 import { ChatSocketHandler } from './src/chat/infrastructure/socket/ChatSocketHandler';
 
 dotenv.config();
@@ -142,7 +142,8 @@ const chatRoutes = configureChatRoutes(
   crearConversacionController,
   getConversacionesController,
   getMensajesController,
-  marcarLeidoController
+  marcarLeidoController,
+  createSubirArchivoController(io)
 );
 
 app.use('/api', userRoutes);

@@ -32,7 +32,9 @@ export class MensajeResponse {
   id_conversacion: number;
   id_remitente: number;
   nombre_remitente?: string;
-  contenido: string;
+  contenido: string | null;
+  tipo_mensaje: 'texto' | 'imagen' | 'video' | 'archivo';
+  archivo_url: string | null;
   leido: boolean;
   created_at: Date;
 
@@ -42,6 +44,8 @@ export class MensajeResponse {
     this.id_remitente = msg.id_remitente;
     this.nombre_remitente = msg.nombre_remitente;
     this.contenido = msg.contenido;
+    this.tipo_mensaje = msg.tipo_mensaje;
+    this.archivo_url = msg.archivo_url;
     this.leido = msg.leido;
     this.created_at = msg.created_at;
   }

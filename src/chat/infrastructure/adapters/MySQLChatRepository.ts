@@ -41,6 +41,8 @@ export class MySQLChatRepository implements IChatRepository {
       id_remitente: row.id_remitente,
       nombre_remitente: row.nombre_remitente || undefined,
       contenido: row.contenido,
+      tipo_mensaje: row.tipo_mensaje || 'texto',
+      archivo_url: row.archivo_url || null,
       leido: Boolean(row.leido),
       created_at: row.created_at,
     };
@@ -91,8 +93,8 @@ export class MySQLChatRepository implements IChatRepository {
 
   async enviarMensaje(data: EnviarMensajeRequest): Promise<Mensaje> {
     const [result] = await pool.execute<ResultSetHeader>(
-      'INSERT INTO mensajes (id_conversacion, id_remitente, contenido) VALUES (?, ?, ?)',
-      [data.id_conversacion, data.id_remitente, data.contenido]
+      'INSERT INTO mensajes (id_conversacion, id_remitente, contenido, tipo_mensaje, archivo_url) VALUES (?, ?, ?, ?, ?)',
+      [data.id_conversacion, data.id_remitente, data.contenido ?? null, data.tipo_mensaje || 'texto', data.archivo_url ?? null]
     );
     const [rows] = await pool.execute<RowDataPacket[]>(
       `SELECT m.*, CONCAT(u.name, ' ', u.lastname) AS nombre_remitente

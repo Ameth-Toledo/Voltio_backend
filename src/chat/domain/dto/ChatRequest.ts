@@ -8,5 +8,7 @@ export interface CrearConversacionRequest {
 export interface EnviarMensajeRequest {
   id_conversacion: number;
   id_remitente: number;
-  contenido: string;
+  contenido: string | null;
+  tipo_mensaje?: 'texto' | 'imagen' | 'video' | 'archivo';
+  archivo_url?: string | null;
 }
